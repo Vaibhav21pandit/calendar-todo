@@ -1,0 +1,19 @@
+README.md
+  s_cdc26c32233393::t_266a98b9efae72 69-71
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "fb0230eef887203d721f702c128aeafc26d9b48d",
+  "prompts": {},
+  "sessions": {
+    "s_cdc26c32233393": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_f7a1a8b0cffeVWdiWsPb4iFje3",
+        "model": "muse-spark-1.2-contributor-free"
+      },
+      "human_author": "Vaibhav21pandit <vaibhavpandit21@gmail.com>"
+    }
+  }
+}
