@@ -1,0 +1,240 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#1a73e8" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <meta name="apple-mobile-web-app-title" content="CalTodo" />
+  <link rel="apple-touch-icon" href="/icons/icon-192.png" />
+  <title>CalendarTodo — Weekly Planner</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500&family=Roboto:wght@400;500;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet" />
+  <link rel="stylesheet" href="/src/style.css" />
+</head>
+<body>
+  <!-- HEADER -->
+  <header class="header">
+    <div class="header-left">
+      <button class="icon-btn" id="menuBtn" aria-label="Menu">
+        <span class="material-symbols-outlined">menu</span>
+      </button>
+      <div class="logo">
+        <div class="logo-icon">
+          <span class="material-symbols-outlined">calendar_month</span>
+        </div>
+        <span class="logo-text">Calendar<span class="logo-accent">Todo</span></span>
+      </div>
+    </div>
+
+    <div class="header-center">
+      <button class="today-btn" id="todayBtn">Today</button>
+      <div class="nav-arrows">
+        <button class="icon-btn small" id="prevWeek" aria-label="Previous week">
+          <span class="material-symbols-outlined">chevron_left</span>
+        </button>
+        <button class="icon-btn small" id="nextWeek" aria-label="Next week">
+          <span class="material-symbols-outlined">chevron_right</span>
+        </button>
+      </div>
+      <h1 class="current-month" id="currentMonth">September 2026</h1>
+    </div>
+
+    <div class="header-right">
+      <div class="view-switcher">
+        <button class="view-btn active">Week</button>
+        <span class="material-symbols-outlined view-drop">arrow_drop_down</span>
+      </div>
+      <button class="icon-btn">
+        <span class="material-symbols-outlined">settings</span>
+      </button>
+      <button class="icon-btn">
+        <span class="material-symbols-outlined">apps</span>
+      </button>
+      <div class="avatar">V</div>
+    </div>
+  </header>
+
+  <div class="layout">
+    <!-- SIDEBAR -->
+    <aside class="sidebar" id="sidebar">
+      <button class="create-btn" id="createBtn">
+        <span class="material-symbols-outlined">add</span>
+        Create
+        <span class="material-symbols-outlined small-icon">arrow_drop_down</span>
+      </button>
+
+      <div class="mini-calendar">
+        <div class="mini-header">
+          <span id="miniMonth">September 2026</span>
+          <div class="mini-nav">
+            <button class="icon-btn tiny" id="miniPrev"><span class="material-symbols-outlined">chevron_left</span></button>
+            <button class="icon-btn tiny" id="miniNext"><span class="material-symbols-outlined">chevron_right</span></button>
+          </div>
+        </div>
+        <div class="mini-weekdays">
+          <span>S</span><span>M</span><span>T</span><span>W</span><span>T</span><span>F</span><span>S</span>
+        </div>
+        <div class="mini-grid" id="miniGrid"></div>
+      </div>
+
+      <div class="sidebar-section">
+        <h3 class="sidebar-title">My Todos</h3>
+        <label class="filter-item">
+          <input type="checkbox" checked data-filter="super">
+          <span class="dot dot-red"></span> Super Urgent
+          <span class="count" id="countSuper">0</span>
+        </label>
+        <label class="filter-item">
+          <input type="checkbox" checked data-filter="kinda">
+          <span class="dot dot-yellow"></span> Kinda Urgent
+          <span class="count" id="countKinda">0</span>
+        </label>
+        <label class="filter-item">
+          <input type="checkbox" checked data-filter="chill">
+          <span class="dot dot-green"></span> Chill
+          <span class="count" id="countChill">0</span>
+        </label>
+        <label class="filter-item">
+          <input type="checkbox" checked data-filter="blocked">
+          <span class="dot dot-pink"></span> Blocked
+          <span class="count" id="countBlocked">0</span>
+        </label>
+        <label class="filter-item">
+          <input type="checkbox" checked data-filter="wontdo">
+          <span class="dot dot-blue"></span> Won't Do
+          <span class="count" id="countWontdo">0</span>
+        </label>
+      </div>
+
+      <div class="sidebar-section">
+        <div class="sidebar-title-row">
+          <h3 class="sidebar-title">This Week</h3>
+          <span class="chip" id="progressChip">0 / 0</span>
+        </div>
+        <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+        <div class="todo-list-sidebar" id="sidebarTodoList"></div>
+      </div>
+
+      <div class="legend">
+        <span class="dot dot-red"></span> Red = Super Urgent
+        <span class="dot dot-yellow"></span> Yellow = Kinda Urgent
+        <span class="dot dot-green"></span> Green = Chill
+        <span class="dot dot-pink"></span> Pink = Blocked
+        <span class="dot dot-blue"></span> Blue = Won't Do
+      </div>
+    </aside>
+
+    <!-- MAIN -->
+    <main class="main">
+      <!-- Day headers -->
+      <div class="week-header" id="weekHeader">
+        <!-- generated by JS -->
+      </div>
+      <!-- All-day row (for todos without time) -->
+      <div class="allday-row" id="allDayRow">
+        <div class="allday-label">
+          <span class="material-symbols-outlined">expand_more</span>
+          all-day
+        </div>
+        <div class="allday-cells" id="allDayCells"></div>
+      </div>
+
+      <div class="grid-scroll" id="gridScroll">
+        <div class="time-grid" id="timeGrid">
+          <!-- generated by JS -->
+        </div>
+      </div>
+
+      <!-- Empty state hint -->
+      <div class="hint" id="hint">Click any time slot to add a Todo • Drag to adjust</div>
+    </main>
+  </div>
+
+  <!-- FAB for mobile -->
+  <button class="fab" id="fabBtn"><span class="material-symbols-outlined">add</span></button>
+
+  <!-- MODAL -->
+  <dialog id="todoDialog" class="dialog">
+    <form method="dialog" id="todoForm" class="dialog-form">
+      <div class="dialog-header">
+        <button type="button" class="icon-btn" id="closeDialog"><span class="material-symbols-outlined">close</span></button>
+        <div class="dialog-actions">
+          <button type="button" class="btn-text" id="deleteBtn" style="display:none">Delete</button>
+          <button type="submit" class="btn-primary" id="saveBtn">Save</button>
+        </div>
+      </div>
+
+      <input type="hidden" id="todoId" />
+
+      <input class="title-input" id="todoTitle" placeholder="Add title" required autocomplete="off" />
+
+      <div class="form-row">
+        <span class="material-symbols-outlined field-icon">schedule</span>
+        <input type="date" id="todoDate" required />
+        <input type="time" id="todoTime" value="09:00" />
+        <span class="duration-wrap">
+          <span class="material-symbols-outlined field-icon small">timelapse</span>
+          <select id="todoDuration">
+            <option value="30">30 min</option>
+            <option value="60" selected>1 hour</option>
+            <option value="90">1.5 hours</option>
+            <option value="120">2 hours</option>
+            <option value="15">15 min</option>
+            <option value="45">45 min</option>
+          </select>
+        </span>
+      </div>
+
+      <div class="form-row priority-row">
+        <span class="material-symbols-outlined field-icon">flag</span>
+        <span class="field-label">Priority</span>
+        <div class="priority-options">
+          <label class="prio-chip prio-red">
+            <input type="radio" name="priority" value="super" checked />
+            <span class="dot dot-red"></span> Super Urgent
+          </label>
+          <label class="prio-chip prio-yellow">
+            <input type="radio" name="priority" value="kinda" />
+            <span class="dot dot-yellow"></span> Kinda Urgent
+          </label>
+          <label class="prio-chip prio-green">
+            <input type="radio" name="priority" value="chill" />
+            <span class="dot dot-green"></span> Chill
+          </label>
+          <label class="prio-chip prio-pink">
+            <input type="radio" name="priority" value="blocked" />
+            <span class="dot dot-pink"></span> Blocked
+          </label>
+          <label class="prio-chip prio-blue">
+            <input type="radio" name="priority" value="wontdo" />
+            <span class="dot dot-blue"></span> Won't Do
+          </label>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <span class="material-symbols-outlined field-icon">notes</span>
+        <input type="text" id="todoDesc" placeholder="Add description" />
+      </div>
+
+      <label class="form-row checkbox-row" id="allDayRowCheck">
+        <span class="material-symbols-outlined field-icon">event</span>
+        <input type="checkbox" id="todoAllDay" />
+        <span>All-day</span>
+      </label>
+
+      <p class="dialog-hint">Colors: <span class="dot dot-red"></span> Super &nbsp; <span class="dot dot-yellow"></span> Kinda &nbsp; <span class="dot dot-green"></span> Chill &nbsp; <span class="dot dot-pink"></span> Blocked &nbsp; <span class="dot dot-blue"></span> Won't Do</p>
+    </form>
+  </dialog>
+
+  <div id="toast" class="toast"></div>
+
+  <div id="offlineBanner" class="offline-banner">Offline — changes will sync when back online</div>
+  <div id="syncStatus" class="sync-status"></div>
+  <script type="module" src="/src/app.js"></script>
+</body>
+</html>

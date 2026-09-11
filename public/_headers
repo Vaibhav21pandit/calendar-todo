@@ -1,0 +1,18 @@
+/sw.js
+  Cache-Control: no-cache
+  Service-Worker-Allowed: /
+
+# manifest
+/manifest.webmanifest
+  Content-Type: application/manifest+json
+  Cache-Control: public, max-age=0, must-revalidate
+
+# immutable assets
+/assets/*
+  Cache-Control: public, max-age=31536000, immutable
+
+# html never cached aggressively (let SW handle)
+/
+  Cache-Control: public, max-age=0, must-revalidate
+/index.html
+  Cache-Control: public, max-age=0, must-revalidate

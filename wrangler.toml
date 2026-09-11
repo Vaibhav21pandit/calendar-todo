@@ -1,0 +1,17 @@
+name = "calendar-todo"
+pages_build_output_dir = "dist"
+compatibility_date = "2024-11-01"
+compatibility_flags = ["nodejs_compat"]
+
+# D1 database — created via `npm run d1:create`
+# Replace database_id after create; local dev uses --d1 flag so placeholder is fine for local
+[[d1_databases]]
+binding = "DB"
+database_name = "calendar-todo-db"
+database_id = "placeholder-replace-after-create"
+
+# For `wrangler pages dev` local, no remote credentials needed
+# For `wrangler pages deploy` remote, ensure database_id is real and run `npm run d1:migrate:remote`
+
+[vars]
+# single-user global table — no auth
