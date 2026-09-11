@@ -8,7 +8,7 @@ compatibility_flags = ["nodejs_compat"]
 [[d1_databases]]
 binding = "DB"
 database_name = "calendar-todo-db"
-database_id = "placeholder-replace-after-create"
+database_id = "0cf55eb2-72df-479d-858e-b47e6eb629e4"
 
 # For `wrangler pages dev` local, no remote credentials needed
 # For `wrangler pages deploy` remote, ensure database_id is real and run `npm run d1:migrate:remote`
