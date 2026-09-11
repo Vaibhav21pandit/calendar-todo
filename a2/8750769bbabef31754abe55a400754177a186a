@@ -1,0 +1,30 @@
+src/style.css
+  s_cdc26c32233393::t_62e56c113d5136 118-119,124-126,128-131,133-135
+  s_cdc26c32233393::t_d3b13c1eda360c 840-845,847,851-852
+index.html
+  s_cdc26c32233393::t_0427c320fc98ed 47-50
+src/app.js
+  s_cdc26c32233393::t_b779318525655f 78-167
+  s_cdc26c32233393::t_6f6332c4d7844b 431,433,436,438,442-448
+  s_cdc26c32233393::t_4bfd7cc6704aa6 514,517-518
+  s_cdc26c32233393::t_a821a93f5b8ff9 353,355-366,371-372,378-386
+  s_cdc26c32233393::t_3778cec66a2f0f 23,29-59
+  s_cdc26c32233393::t_e5f20d71a5aa64 890-912,914-921
+  s_cdc26c32233393::t_f343fcddf854a7 60
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "a28750769bbabef31754abe55a400754177a186a",
+  "prompts": {},
+  "sessions": {
+    "s_cdc26c32233393": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_f7a1a8b0cffeVWdiWsPb4iFje3",
+        "model": "muse-spark-1.2-contributor-free"
+      },
+      "human_author": "Vaibhav21pandit <vaibhavpandit21@gmail.com>"
+    }
+  }
+}
