@@ -66,3 +66,6 @@ No auth: all devices share one global `todos` table. `deviceId` is stored for de
 - [x] T5 online-first sync — vite proxy → wrangler, `init()` merge, offline banner, `flushOutbox` + 30s poll
 - [x] T6 deploy config — `wrangler.toml`, `_headers/_redirects`, GH Actions
 - [x] T7 hardening — Export JSON, offline banner, LWW (tests below)
+
+> Last synced: 2026-09-11 — mobile 3-day view + drag & drop • Cloudflare Pages auto-deploy from `main`
+
