@@ -114,21 +114,25 @@ body {
 }
 .view-switcher {
   display: flex;
-  align-items: center;
   border: 1px solid var(--gray-300);
-  border-radius: 6px;
-  padding: 0 8px 0 16px;
+  border-radius: 8px;
+  overflow: hidden;
   height: 36px;
-  gap: 4px;
-  cursor: pointer;
 }
 .view-btn {
   border: none;
-  background: none;
-  font-size: 14px;
+  background: #fff;
+  padding: 0 14px;
+  font-size: 13px;
   font-weight: 500;
+  cursor: pointer;
+  color: var(--gray-700);
+  border-right: 1px solid var(--gray-300);
+  transition: background .15s, color .15s;
 }
-.view-drop { font-size: 20px; color: var(--gray-500); }
+.view-btn:last-child { border-right: none; }
+.view-btn.active { background: #1a73e8; color: #fff; }
+.view-btn:hover:not(.active) { background: var(--gray-50); }
 .avatar {
   width: 36px; height: 36px;
   border-radius: 50%;
@@ -833,11 +837,17 @@ body {
   .hint { display: none; }
 }
 @media (max-width: 640px) {
-  .header-right .view-switcher, .header-right .icon-btn { display: none; }
-  .week-header { grid-template-columns: 48px repeat(7, 1fr); }
+  .header-right .icon-btn { display: none; }
+  .header-left { min-width: auto; }
+  .header-center .current-month { font-size: 16px; min-width: 120px; }
+  .view-switcher { height: 32px; }
+  .view-btn { padding: 0 10px; font-size: 12px; }
+  .week-header { grid-template-columns: 48px repeat(var(--cols, 7), 1fr); }
   .allday-row { grid-template-columns: 48px 1fr; }
-  .time-grid { grid-template-columns: 48px repeat(7, 1fr); }
+  .time-grid { grid-template-columns: 48px repeat(var(--cols, 7), 1fr); }
   .gmt-label, .allday-label { font-size: 9px; padding-left: 4px; }
   .day-name { font-size: 10px; }
   .day-num { font-size: 16px; width: 32px; height: 32px; }
+  .event { padding: 4px 6px; font-size: 11px; }
+  .event-time, .event-desc { display: none; }
 }

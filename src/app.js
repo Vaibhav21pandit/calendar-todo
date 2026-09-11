@@ -20,11 +20,43 @@ const HOUR_H = 52;
 
 // State
 let todos = [];
-let weekStart = getMonday(new Date());
+let weekStart = getMonday(new Date()); // kept for weekly progress calc + mini calendar
 let miniDate = new Date(weekStart);
 let filterState = { super: true, kinda: true, chill: true, blocked: true, wontdo: true };
 let editingId = null;
 let syncState = 'idle';
+
+// View mode: 'week' | '3day' | 'day' — default 3-day on mobile, week on desktop
+let viewMode = (() => {
+  try {
+    const saved = localStorage.getItem('calViewMode');
+    if (saved && ['day','3day','week'].includes(saved)) return saved;
+  } catch {}
+  return window.innerWidth < 768 ? '3day' : 'week';
+})();
+let viewAnchor = (() => {
+  const d = new Date(); d.setHours(0,0,0,0);
+  if (viewMode === 'week') return getMonday(d);
+  return d; // for day/3day start at today
+})();
+function viewSize() { return viewMode === 'week' ? 7 : viewMode === '3day' ? 3 : 1; }
+function getVisibleDays() {
+  if (viewMode === 'week') return getWeekDays(viewAnchor);
+  return Array.from({ length: viewSize() }, (_, i) => addDays(viewAnchor, i));
+}
+function getHeaderLabelForView() {
+  const days = getVisibleDays();
+  if (days.length === 1) {
+    return days[0].toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
+  }
+  if (days.length === 3) {
+    const a = days[0], b = days[2];
+    if (a.getMonth() === b.getMonth() && a.getFullYear() === b.getFullYear())
+      return `${a.toLocaleDateString('en-US',{month:'long'})} ${a.getDate()}–${b.getDate()}, ${a.getFullYear()}`;
+    return `${a.toLocaleDateString('en-US',{month:'short', day:'numeric'})} – ${b.toLocaleDateString('en-US',{month:'short', day:'numeric', year:'numeric'})}`;
+  }
+  return getHeaderLabel(viewAnchor);
+}
 
 // DOM refs
 const currentMonthEl = document.getElementById('currentMonth');
@@ -43,6 +75,96 @@ const syncStatus = document.getElementById('syncStatus');
 const todoAllDayEl = document.getElementById('todoAllDay');
 const todoTimeEl = document.getElementById('todoTime');
 const todoDurationEl = document.getElementById('todoDuration');
+const viewSwitcherEl = document.getElementById('viewSwitcher');
+
+function updateViewSwitcher() {
+  if (!viewSwitcherEl) return;
+  viewSwitcherEl.querySelectorAll('.view-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.view === viewMode);
+  });
+  // also update CSS var for grid cols fallback
+  document.documentElement.style.setProperty('--cols', String(viewSize()));
+}
+
+function setViewMode(mode, opts = {}) {
+  if (!['day','3day','week'].includes(mode)) return;
+  const prevMode = viewMode;
+  viewMode = mode;
+  try { localStorage.setItem('calViewMode', mode); } catch {}
+  // when switching, keep anchor sensible: if switching to week, snap to Monday; if to day/3day, snap to today or keep current anchor's first day
+  if (opts.anchor) viewAnchor = new Date(opts.anchor);
+  else if (prevMode === 'week' && mode !== 'week') {
+    // coming from week: focus on today if today in week, else first day of week
+    const today = new Date(); today.setHours(0,0,0,0);
+    const weekDays = getWeekDays(viewAnchor);
+    const hasToday = weekDays.some(d=>isSameDay(d, today));
+    viewAnchor = hasToday ? new Date(today) : new Date(weekDays[0]);
+  } else if (prevMode !== 'week' && mode === 'week') {
+    viewAnchor = getMonday(viewAnchor);
+  }
+  // for day/3day, ensure anchor is at 0h
+  viewAnchor.setHours(0,0,0,0);
+  weekStart = mode === 'week' ? new Date(viewAnchor) : getMonday(viewAnchor);
+  miniDate = new Date(viewAnchor.getFullYear(), viewAnchor.getMonth(), 1);
+  updateViewSwitcher();
+  renderAll();
+  // toast hint on mobile first switch
+  if (prevMode !== mode && window.innerWidth < 768) {
+    const label = mode==='day'?'Day view': mode==='3day'?'3-day view':'Week view';
+    showToast(label + (mode!=='week'?' — swipe to navigate':''), null, null);
+    setTimeout(hideToast, 1500);
+  }
+}
+
+// init switcher
+updateViewSwitcher();
+if (viewSwitcherEl) {
+  viewSwitcherEl.querySelectorAll('.view-btn').forEach(btn=>{
+    btn.addEventListener('click', ()=> setViewMode(btn.dataset.view));
+  });
+}
+
+// swipe on gridScroll for mobile 3day/day
+(function setupSwipe(){
+  let startX = 0, startY = 0, isSwiping = false, startTime = 0;
+  const thresholdX = 60, thresholdY = 80, maxTime = 600;
+  const el = document.getElementById('gridScroll');
+  if (!el) return;
+  el.addEventListener('touchstart', (e)=>{
+    if (viewMode === 'week' && window.innerWidth >= 768) return; // only swipe in mobile day/3day
+    if (e.touches.length !== 1) return;
+    startX = e.touches[0].clientX;
+    startY = e.touches[0].clientY;
+    startTime = Date.now();
+    isSwiping = false;
+  }, { passive: true });
+  el.addEventListener('touchmove', (e)=>{
+    if (!startX) return;
+    const dx = e.touches[0].clientX - startX;
+    const dy = e.touches[0].clientY - startY;
+    if (Math.abs(dx) > 12 && Math.abs(dx) > Math.abs(dy)) {
+      isSwiping = true;
+    }
+  }, { passive: true });
+  el.addEventListener('touchend', (e)=>{
+    if (!isSwiping) { startX=0; return; }
+    const dx = e.changedTouches[0].clientX - startX;
+    const dy = e.changedTouches[0].clientY - startY;
+    const dt = Date.now() - startTime;
+    if (dt < maxTime && Math.abs(dx) > thresholdX && Math.abs(dx) > Math.abs(dy) + 10) {
+      if (dx < 0) { // swipe left → next
+        viewAnchor = addDays(viewAnchor, viewSize());
+        if (viewMode==='week') weekStart = new Date(viewAnchor);
+        renderAll();
+      } else { // swipe right → prev
+        viewAnchor = addDays(viewAnchor, -viewSize());
+        if (viewMode==='week') weekStart = new Date(viewAnchor);
+        renderAll();
+      }
+    }
+    startX=0; isSwiping=false;
+  });
+})();
 
 // Filters
 document.querySelectorAll('[data-filter]').forEach(cb => {
@@ -228,19 +350,40 @@ function renderAll(){
 }
 
 function renderHeader(){
-  currentMonthEl.textContent = getHeaderLabel(weekStart);
+  currentMonthEl.textContent = getHeaderLabelForView();
   miniMonthEl.textContent = formatMonthYear(miniDate);
-  const days = getWeekDays(weekStart);
+  const days = getVisibleDays();
+  const n = days.length;
+  // update grid columns dynamically
+  weekHeaderEl.style.gridTemplateColumns = `72px repeat(${n}, 1fr)`;
+  const allDayRow = document.getElementById('allDayRow');
+  if (allDayRow) allDayRow.style.gridTemplateColumns = `72px 1fr`;
+  if (allDayCellsEl) {
+    allDayCellsEl.style.gridTemplateColumns = `repeat(${n}, 1fr)`;
+  }
+  if (timeGridEl) {
+    timeGridEl.style.gridTemplateColumns = `72px repeat(${n}, 1fr)`;
+  }
   const dowNames = ['SUN','MON','TUE','WED','THU','FRI','SAT'];
   let html = `<div class="gmt-label">GMT+${-new Date().getTimezoneOffset()/60}</div>`;
   days.forEach(d=>{
     const todayClass = isToday(d) ? ' today' : '';
-    html += `<div class="day-head${todayClass}">
+    const isFocused = isSameDay(d, viewAnchor);
+    html += `<div class="day-head${todayClass}" data-date="${formatDateISO(d)}" title="Tap to focus 1-day">
       <div class="day-name">${dowNames[d.getDay()]}</div>
       <div class="day-num">${d.getDate()}</div>
     </div>`;
   });
   weekHeaderEl.innerHTML = html;
+  // tap day header to focus 1-day
+  weekHeaderEl.querySelectorAll('.day-head').forEach(el=>{
+    el.style.cursor='pointer';
+    el.addEventListener('click', ()=>{
+      if (viewMode !== 'day') {
+        setViewMode('day', { anchor: parseISO(el.dataset.date) });
+      }
+    });
+  });
   if(allDayCellsEl){
     allDayCellsEl.innerHTML = days.map((d)=> `<div class="allday-cell" data-date="${formatDateISO(d)}"></div>`).join('');
     // render all-day todos
@@ -285,15 +428,24 @@ function renderHeader(){
 }
 
 function renderMiniCalendar(){
+  // for mini highlight, keep weekStart but also highlight visible days
   const cells = getMiniCalendarCells(miniDate, weekStart, todos);
+  const visible = new Set(getVisibleDays().map(formatDateISO));
   miniGridEl.innerHTML = '';
   cells.forEach(c => {
+    const isVisible = visible.has(c.iso);
     const div = document.createElement('div');
-    div.className = 'mini-day' + (c.other?' other':'') + (c.today?' today':'') + (c.inWeek?' selected':'') + (c.hasTodo?' has-todo':'');
+    div.className = 'mini-day' + (c.other?' other':'') + (c.today?' today':'') + (c.inWeek?' selected':'') + (isVisible?' selected':'') + (c.hasTodo?' has-todo':'');
     div.textContent = c.dayNum;
     div.title = c.iso;
     div.addEventListener('click', ()=>{
-      weekStart = getMonday(c.date);
+      if (viewMode === 'week') {
+        viewAnchor = getMonday(c.date);
+        weekStart = new Date(viewAnchor);
+      } else {
+        viewAnchor = new Date(c.date); viewAnchor.setHours(0,0,0,0);
+        weekStart = getMonday(viewAnchor);
+      }
       miniDate = new Date(c.date.getFullYear(), c.date.getMonth(), 1);
       renderAll();
     });
@@ -359,9 +511,11 @@ function renderSidebar(){
 }
 
 function renderTimeGrid(){
-  const days = getWeekDays(weekStart);
+  const days = getVisibleDays();
   timeGridEl.innerHTML = '';
   timeGridEl.style.setProperty('--hour-h', HOUR_H+'px');
+  // ensure cols are correct (also set in renderHeader)
+  timeGridEl.style.gridTemplateColumns = `72px repeat(${days.length}, 1fr)`;
   for(let h=0; h<24; h++){
     const lbl = document.createElement('div');
     lbl.className='time-label';
@@ -733,11 +887,38 @@ form.addEventListener('submit', async (e)=>{
   if (navigator.onLine === false) showToast('Offline — queued for sync');
 });
 
-// Navigation
-document.getElementById('prevWeek').addEventListener('click', ()=>{ weekStart = addDays(weekStart,-7); renderAll(); });
-document.getElementById('nextWeek').addEventListener('click', ()=>{ weekStart = addDays(weekStart,7); renderAll(); });
+// Navigation — respects viewMode (week=7, 3day=3, day=1)
+function navPrev() {
+  const n = viewSize();
+  viewAnchor = addDays(viewAnchor, -n);
+  if (viewMode === 'week') weekStart = new Date(viewAnchor);
+  else {
+    weekStart = getMonday(viewAnchor);
+    miniDate = new Date(viewAnchor.getFullYear(), viewAnchor.getMonth(), 1);
+  }
+  renderAll();
+}
+function navNext() {
+  const n = viewSize();
+  viewAnchor = addDays(viewAnchor, n);
+  if (viewMode === 'week') weekStart = new Date(viewAnchor);
+  else {
+    weekStart = getMonday(viewAnchor);
+    miniDate = new Date(viewAnchor.getFullYear(), viewAnchor.getMonth(), 1);
+  }
+  renderAll();
+}
+document.getElementById('prevWeek').addEventListener('click', navPrev);
+document.getElementById('nextWeek').addEventListener('click', navNext);
 document.getElementById('todayBtn').addEventListener('click', ()=>{
-  weekStart = getMonday(new Date());
+  const today = new Date(); today.setHours(0,0,0,0);
+  if (viewMode === 'week') {
+    viewAnchor = getMonday(today);
+    weekStart = new Date(viewAnchor);
+  } else {
+    viewAnchor = new Date(today);
+    weekStart = getMonday(viewAnchor);
+  }
   miniDate = new Date();
   renderAll();
   gridScrollEl.scrollTop = 8*HOUR_H;
