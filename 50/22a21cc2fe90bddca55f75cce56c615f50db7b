@@ -1,0 +1,29 @@
+.gitignore
+  s_cdc26c32233393::t_34d3bef7acd25c 1-9
+src/pwa.js
+  s_835c3518941e0a::t_54688ed426f5c2 1-64
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "5022a21cc2fe90bddca55f75cce56c615f50db7b",
+  "prompts": {},
+  "sessions": {
+    "s_835c3518941e0a": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "2181a53b-edda-4044-b182-5c4d8551095a",
+        "model": "gemini-3.7-flash"
+      },
+      "human_author": "Vaibhav21pandit <vaibhavpandit21@gmail.com>"
+    },
+    "s_cdc26c32233393": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_f7a1a8b0cffeVWdiWsPb4iFje3",
+        "model": "muse-spark-1.2-contributor-free"
+      },
+      "human_author": "Vaibhav21pandit <vaibhavpandit21@gmail.com>"
+    }
+  }
+}
